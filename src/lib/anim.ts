@@ -97,6 +97,103 @@ export function useStaggerReveal<T extends HTMLElement = HTMLDivElement>(opts: {
 }
 
 /**
+ * Clip-path mask reveal — wipes the element into view on scroll.
+ * direction: 'left' | 'up' | 'right' | 'down'
+ */
+export function useClipReveal<T extends HTMLElement = HTMLDivElement>(opts: {
+  direction?: 'left' | 'up' | 'right' | 'down';
+  duration?: number;
+  delay?: number;
+  start?: string;
+  once?: boolean;
+} = {}) {
+  const ref = useRef<T>(null);
+
+  useEffect(() => {
+    const el = ref.current;
+    if (!el) return;
+
+    if (prefersReducedMotion()) {
+      gsap.set(el, { clipPath: 'inset(0% 0% 0% 0%)', opacity: 1 });
+      return;
+    }
+
+    const dir = opts.direction ?? 'left';
+    const from: Record<string, string> = {
+      left: 'inset(0% 100% 0% 0%)',
+      right: 'inset(0% 0% 0% 100%)',
+      up: 'inset(100% 0% 0% 0%)',
+      down: 'inset(0% 0% 100% 0%)',
+    };
+
+    const ctx = gsap.context(() => {
+      gsap.fromTo(
+        el,
+        { clipPath: from[dir] },
+        {
+          clipPath: 'inset(0% 0% 0% 0%)',
+          duration: opts.duration ?? 1.1,
+          delay: opts.delay ?? 0,
+          ease: EASE.outQuart,
+          scrollTrigger: {
+            trigger: el,
+            start: opts.start ?? 'top 80%',
+            once: opts.once ?? true,
+          },
+        }
+      );
+    }, el);
+
+    return () => ctx.revert();
+  }, []);
+
+  return ref;
+}
+
+/**
+ * Scale reveal — element scales up from a smaller size while fading in.
+ * Good for images, cards, and visual focal points.
+ */
+export function useScaleReveal<T extends HTMLElement = HTMLDivElement>(opts: {
+  from?: number;
+  duration?: number;
+  delay?: number;
+  start?: string;
+  once?: boolean;
+} = {}) {
+  const ref = useRef<T>(null);
+
+  useEffect(() => {
+    const el = ref.current;
+    if (!el) return;
+
+    if (prefersReducedMotion()) {
+      gsap.set(el, { opacity: 1, scale: 1 });
+      return;
+    }
+
+    const ctx = gsap.context(() => {
+      gsap.from(el, {
+        scale: opts.from ?? 0.85,
+        opacity: 0,
+        duration: opts.duration ?? 1.2,
+        delay: opts.delay ?? 0,
+        ease: EASE.outQuart,
+        scrollTrigger: {
+          trigger: el,
+          start: opts.start ?? 'top 85%',
+          once: opts.once ?? true,
+        },
+      });
+    }, el);
+
+    return () => ctx.revert();
+  }, []);
+
+  return ref;
+}
+
+/**
  * Parallax: translate an element opposite to scroll progress through its parent.
  * `speed` < 1 moves slower than scroll (background feel); > 1 moves faster.
  */
@@ -123,6 +220,46 @@ export function useParallax<T extends HTMLElement = HTMLDivElement>(opts: {
           scrub: true,
         },
       });
+    }, el);
+
+    return () => ctx.revert();
+  }, []);
+
+  return ref;
+}
+
+/**
+ * Scrubbed parallax — element moves with scroll progress (0→1) across a range.
+ * `from` and `to` define the y translation in px.
+ */
+export function useScrubParallax<T extends HTMLElement = HTMLDivElement>(opts: {
+  from?: number;
+  to?: number;
+  trigger?: string;
+  start?: string;
+  end?: string;
+} = {}) {
+  const ref = useRef<T>(null);
+
+  useEffect(() => {
+    const el = ref.current;
+    if (!el || prefersReducedMotion()) return;
+
+    const ctx = gsap.context(() => {
+      gsap.fromTo(
+        el,
+        { y: opts.from ?? 0 },
+        {
+          y: opts.to ?? 0,
+          ease: 'none',
+          scrollTrigger: {
+            trigger: opts.trigger ? (el.closest(opts.trigger) ?? el) : el,
+            start: opts.start ?? 'top bottom',
+            end: opts.end ?? 'bottom top',
+            scrub: 1,
+          },
+        }
+      );
     }, el);
 
     return () => ctx.revert();
@@ -239,6 +376,50 @@ export function useAmbient<T extends HTMLElement = HTMLDivElement>(opts: {
         ease: 'sine.inOut',
         repeat: -1,
         yoyo: true,
+      });
+    }, el);
+
+    return () => ctx.revert();
+  }, []);
+
+  return ref;
+}
+
+/**
+ * Count-up animation for numeric stat displays.
+ * Animates from 0 to the target value on scroll.
+ */
+export function useCountUp<T extends HTMLElement = HTMLDivElement>(opts: {
+  end: number;
+  suffix?: string;
+  duration?: number;
+  start?: string;
+}) {
+  const ref = useRef<T>(null);
+
+  useEffect(() => {
+    const el = ref.current;
+    if (!el) return;
+
+    if (prefersReducedMotion()) {
+      el.textContent = `${opts.end}${opts.suffix ?? ''}`;
+      return;
+    }
+
+    const ctx = gsap.context(() => {
+      const obj = { val: 0 };
+      gsap.to(obj, {
+        val: opts.end,
+        duration: opts.duration ?? 1.8,
+        ease: EASE.out,
+        scrollTrigger: {
+          trigger: el,
+          start: opts.start ?? 'top 85%',
+          once: true,
+        },
+        onUpdate: () => {
+          el.textContent = `${Math.round(obj.val)}${opts.suffix ?? ''}`;
+        },
       });
     }, el);
 

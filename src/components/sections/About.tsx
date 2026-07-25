@@ -1,13 +1,12 @@
 import { SectionHeading } from '@/components/ui/SectionHeading';
 import { GlassCard } from '@/components/ui/GlassCard';
 import { stats } from '@/lib/data';
-import { useReveal, useParallax } from '@/lib/anim';
+import { useClipReveal, useScrubParallax, useCountUp } from '@/lib/anim';
 
 export function About() {
-  const portraitRef = useReveal<HTMLDivElement>({ x: -60, opacity: 0, duration: 1.2, start: 'top 75%' });
-  const bioRef = useReveal<HTMLDivElement>({ x: 60, opacity: 0, duration: 1.2, delay: 0.15, start: 'top 75%' });
-  const statsRef = useReveal<HTMLDivElement>({ y: 50, opacity: 0, duration: 0.8, delay: 0.3, start: 'top 80%' });
-  const ringRef = useParallax<HTMLDivElement>({ speed: 0.15 });
+  const portraitRef = useClipReveal<HTMLDivElement>({ direction: 'up', duration: 1.4, start: 'top 75%' });
+  const bioRef = useScrubParallax<HTMLDivElement>({ from: 60, to: -60, start: 'top bottom', end: 'bottom top' });
+  const ringRef = useScrubParallax<HTMLDivElement>({ from: 20, to: -20, start: 'top bottom', end: 'bottom top' });
 
   return (
     <section id="about" className="relative z-10 px-6 py-24 md:py-32">
@@ -24,7 +23,7 @@ export function About() {
         />
 
         <div className="mt-16 grid gap-8 lg:grid-cols-12 lg:gap-12">
-          {/* Portrait placeholder */}
+          {/* Portrait placeholder — clip-path mask reveal */}
           <div ref={portraitRef} className="lg:col-span-5">
             <div className="relative">
               <div className="aspect-[4/5] overflow-hidden rounded-2xl glass-strong">
@@ -37,7 +36,7 @@ export function About() {
                   </div>
                 </div>
               </div>
-              {/* Accent ring with parallax */}
+              {/* Accent ring with scrub parallax */}
               <div
                 ref={ringRef}
                 className="absolute -inset-px -z-10 rounded-2xl bg-gradient-to-br from-brand-primary/30 to-brand-secondary/30 blur-md"
@@ -45,7 +44,7 @@ export function About() {
             </div>
           </div>
 
-          {/* Bio + stats */}
+          {/* Bio + stats — scrub parallax for depth */}
           <div ref={bioRef} className="flex flex-col justify-between gap-8 lg:col-span-7">
             <div className="space-y-6 text-lg leading-relaxed text-slate-300">
               <p>
@@ -60,22 +59,40 @@ export function About() {
               </p>
             </div>
 
-            {/* Stats grid */}
-            <div ref={statsRef} className="grid grid-cols-2 gap-4 sm:grid-cols-4">
-              {stats.map((stat) => (
-                <GlassCard key={stat.id} tilt className="p-5">
-                  <div className="text-3xl font-bold tracking-tighter text-gradient">
-                    {stat.value}
-                  </div>
-                  <div className="mt-1 text-xs uppercase tracking-wider text-slate-400">
-                    {stat.label}
-                  </div>
-                </GlassCard>
-              ))}
-            </div>
+            {/* Stats grid with count-up animation */}
+            <StatsGrid />
           </div>
         </div>
       </div>
     </section>
+  );
+}
+
+function StatsGrid() {
+  return (
+    <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
+      {stats.map((stat) => (
+        <StatCard key={stat.id} stat={stat} />
+      ))}
+    </div>
+  );
+}
+
+function StatCard({ stat }: { stat: (typeof stats)[number] }) {
+  const valueRef = useCountUp<HTMLSpanElement>({
+    end: parseInt(stat.value, 10) || 0,
+    suffix: stat.value.replace(/[0-9]/g, ''),
+    duration: 2,
+  });
+
+  return (
+    <GlassCard tilt className="p-5">
+      <div className="text-3xl font-bold tracking-tighter text-gradient">
+        <span ref={valueRef}>{stat.value}</span>
+      </div>
+      <div className="mt-1 text-xs uppercase tracking-wider text-slate-400">
+        {stat.label}
+      </div>
+    </GlassCard>
   );
 }

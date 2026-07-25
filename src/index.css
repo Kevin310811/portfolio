@@ -109,6 +109,53 @@
   width: 100%;
 }
 
+/* Clip-path mask reveal helpers */
+.clip-reveal {
+  clip-path: inset(0 100% 0 0);
+  will-change: clip-path;
+}
+.clip-reveal-up {
+  clip-path: inset(100% 0 0 0);
+  will-change: clip-path;
+}
+
+/* Perspective container for 3D card depth */
+.perspective-1000 {
+  perspective: 1000px;
+}
+.preserve-3d {
+  transform-style: preserve-3d;
+}
+
+/* Aurora gradient that drifts on a long loop */
+@keyframes aurora-drift {
+  0%, 100% { transform: translate3d(0, 0, 0) scale(1); }
+  33% { transform: translate3d(3%, -2%, 0) scale(1.05); }
+  66% { transform: translate3d(-2%, 1%, 0) scale(0.98); }
+}
+.aurora-blob {
+  animation: aurora-drift 20s ease-in-out infinite;
+  will-change: transform;
+}
+
+/* Scroll progress bar */
+.scroll-progress {
+  position: fixed;
+  top: 0;
+  left: 0;
+  height: 2px;
+  z-index: 100;
+  background: linear-gradient(90deg, #00D3F3, #C27AFF);
+  transform-origin: left center;
+  will-change: transform;
+}
+
+/* Floating pill animation */
+@keyframes pill-float {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-4px); }
+}
+
 @media (prefers-reduced-motion: reduce) {
   *,
   *::before,
@@ -116,5 +163,12 @@
     animation-duration: 0.01ms !important;
     animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;
+  }
+  .clip-reveal,
+  .clip-reveal-up {
+    clip-path: none !important;
+  }
+  .aurora-blob {
+    animation: none !important;
   }
 }

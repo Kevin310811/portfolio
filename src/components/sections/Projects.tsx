@@ -1,8 +1,9 @@
+import { useEffect, useRef, useState } from 'react';
 import { ArrowUpRight } from 'lucide-react';
 import { SectionHeading } from '@/components/ui/SectionHeading';
 import { ProjectBrowser } from '@/components/ui/ProjectBrowser';
 import { projects, type Project } from '@/lib/data';
-import { useReveal } from '@/lib/anim';
+import { gsap, ScrollTrigger, prefersReducedMotion, EASE } from '@/lib/gsap';
 import { cn } from '@/lib/utils';
 
 export function Projects() {
@@ -19,46 +20,129 @@ export function Projects() {
           description="A curated set of products and experiences — each one a collaboration between design intent and engineering precision."
         />
 
-        <div className="mt-16 flex flex-col gap-20 md:gap-28">
-          {projects.map((project, i) => (
-            <ProjectRow key={project.id} project={project} index={i} />
-          ))}
-        </div>
+        <Showcase />
       </div>
     </section>
   );
 }
 
-function ProjectRow({ project, index }: { project: Project; index: number }) {
-  const flipped = index % 2 === 1;
-  const previewRef = useReveal<HTMLDivElement>({
-    x: flipped ? 60 : -60,
-    opacity: 0,
-    duration: 1,
-    start: 'top 80%',
-  });
-  const detailsRef = useReveal<HTMLDivElement>({
-    x: flipped ? -60 : 60,
-    opacity: 0,
-    duration: 1,
-    delay: 0.15,
-    start: 'top 80%',
-  });
+function Showcase() {
+  const sectionRef = useRef<HTMLDivElement>(null);
+  const stickyRef = useRef<HTMLDivElement>(null);
+  const [activeIndex, setActiveIndex] = useState(0);
+
+  useEffect(() => {
+    const section = sectionRef.current;
+    if (!section) return;
+
+    if (prefersReducedMotion()) {
+      setActiveIndex(projects.length - 1);
+      return;
+    }
+
+    const ctx = gsap.context(() => {
+      // One ScrollTrigger per project — fires when its panel enters the sticky zone.
+      const panels = section.querySelectorAll('[data-project-panel]');
+      const triggers: ScrollTrigger[] = [];
+
+      panels.forEach((panel, i) => {
+        const st = ScrollTrigger.create({
+          trigger: panel,
+          start: 'top center',
+          end: 'bottom center',
+          onEnter: () => setActiveIndex(i),
+          onEnterBack: () => setActiveIndex(i),
+        });
+        triggers.push(st);
+      });
+
+      // Subtle perspective tilt on the sticky browser as you scroll.
+      const sticky = stickyRef.current;
+      if (sticky) {
+        gsap.to(sticky, {
+          rotateX: 4,
+          rotateY: -2,
+          transformPerspective: 1200,
+          ease: 'none',
+          scrollTrigger: {
+            trigger: section,
+            start: 'top top',
+            end: 'bottom bottom',
+            scrub: 1,
+          },
+        });
+      }
+    }, section);
+
+    return () => ctx.revert();
+  }, []);
+
+  const active = projects[activeIndex];
 
   return (
-    <article className="group grid gap-8 lg:grid-cols-12 lg:items-center lg:gap-12">
-      {/* Browser preview */}
-      <div ref={previewRef} className={cn('lg:col-span-7', flipped && 'lg:order-2 lg:col-start-6')}>
-        <div className="relative transition-transform duration-500 group-hover:-translate-y-1">
-          <ProjectBrowser url={project.url} accent={project.accent}>
-            <ProjectPreview project={project} />
-          </ProjectBrowser>
-          <div className="absolute -inset-2 -z-10 rounded-2xl bg-gradient-to-br from-brand-primary/20 to-brand-secondary/20 opacity-0 blur-2xl transition-opacity duration-500 group-hover:opacity-100" />
+    <div ref={sectionRef} className="mt-16 perspective-1000">
+      {/* Sticky browser preview — stays pinned while panels scroll past */}
+      <div
+        ref={stickyRef}
+        className="sticky top-24 z-10 mb-8"
+        style={{ transformStyle: 'preserve-3d' }}
+      >
+        <div className="relative">
+          {/* Crossfade stack — all previews layered, opacity driven by activeIndex */}
+          <div className="relative">
+            {projects.map((project, i) => (
+              <div
+                key={project.id}
+                className={cn(
+                  'transition-opacity duration-700 ease-out',
+                  i === activeIndex ? 'opacity-100' : 'pointer-events-none absolute inset-0 opacity-0'
+                )}
+              >
+                <ProjectBrowser url={project.url} accent={project.accent}>
+                  <ProjectPreview project={project} />
+                </ProjectBrowser>
+              </div>
+            ))}
+          </div>
+
+          {/* Ambient glow behind the browser */}
+          <div
+            className="absolute -inset-4 -z-10 rounded-3xl bg-gradient-to-br from-brand-primary/15 to-brand-secondary/15 blur-3xl transition-opacity duration-700"
+            style={{ opacity: active.accent === 'primary' ? 0.7 : 0.5 }}
+          />
         </div>
       </div>
 
-      {/* Details */}
-      <div ref={detailsRef} className={cn('flex flex-col gap-5 lg:col-span-5', flipped && 'lg:order-1 lg:col-start-1')}>
+      {/* Scrolling detail panels — each one updates the sticky preview */}
+      <div className="flex flex-col gap-[60vh]">
+        {projects.map((project, i) => (
+          <ProjectPanel key={project.id} project={project} index={i} active={i === activeIndex} />
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function ProjectPanel({
+  project,
+  index,
+  active,
+}: {
+  project: Project;
+  index: number;
+  active: boolean;
+}) {
+  return (
+    <div
+      data-project-panel
+      className="flex min-h-screen items-center justify-center"
+    >
+      <div
+        className={cn(
+          'max-w-md rounded-2xl p-8 transition-all duration-500',
+          active ? 'glass-strong opacity-100 translate-y-0' : 'opacity-40 translate-y-4'
+        )}
+      >
         <div className="flex items-center gap-3 text-xs uppercase tracking-[0.2em] text-slate-500">
           <span className="text-brand-primary">0{index + 1}</span>
           <span className="h-px w-8 bg-white/15" />
@@ -67,13 +151,13 @@ function ProjectRow({ project, index }: { project: Project; index: number }) {
           <span>{project.year}</span>
         </div>
 
-        <h3 className="text-3xl font-bold tracking-tight text-white md:text-4xl">
+        <h3 className="mt-4 text-3xl font-bold tracking-tight text-white md:text-4xl">
           {project.title}
         </h3>
 
-        <p className="text-base leading-relaxed text-slate-400">{project.description}</p>
+        <p className="mt-4 text-base leading-relaxed text-slate-400">{project.description}</p>
 
-        <ul className="flex flex-wrap gap-2">
+        <ul className="mt-6 flex flex-wrap gap-2">
           {project.tags.map((tag) => (
             <li
               key={tag}
@@ -86,7 +170,7 @@ function ProjectRow({ project, index }: { project: Project; index: number }) {
 
         <a
           href="#"
-          className="group/link mt-2 inline-flex items-center gap-1.5 text-sm font-medium text-white"
+          className="group/link mt-6 inline-flex items-center gap-1.5 text-sm font-medium text-white"
           data-cursor="hover"
         >
           View case study
@@ -96,7 +180,7 @@ function ProjectRow({ project, index }: { project: Project; index: number }) {
           />
         </a>
       </div>
-    </article>
+    </div>
   );
 }
 

@@ -1,6 +1,7 @@
 import { useLenis } from '@/lib/useLenis';
 import { Background } from '@/components/ui/Background';
 import { Grain } from '@/components/ui/Grain';
+import { ScrollProgress } from '@/components/ui/ScrollProgress';
 import { Cursor } from '@/components/layout/Cursor';
 import { Navbar } from '@/components/layout/Navbar';
 import { Footer } from '@/components/layout/Footer';
@@ -18,6 +19,7 @@ function App() {
     <>
       <Background />
       <Grain />
+      <ScrollProgress />
       <Cursor />
       <Navbar />
       <main className="relative z-10">
