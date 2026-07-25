@@ -6,6 +6,8 @@ import { gsap, ScrollTrigger, prefersReducedMotion, EASE, STAGGER } from '@/lib/
 
 /**
  * Skills — floating technology capsules with staggered reveal and gentle float.
+ * The reveal animates opacity only; the float handles y. This separation
+ * prevents the two tweens from fighting over the same property.
  */
 export function Skills() {
   const rootRef = useRef<HTMLDivElement>(null);
@@ -20,21 +22,26 @@ export function Skills() {
     }
 
     const ctx = gsap.context(() => {
-      // Staggered reveal of all pills on scroll
-      gsap.from('[data-skill]', {
-        y: 30,
-        opacity: 0,
-        duration: 0.6,
-        stagger: { each: 0.04, from: 'random' },
-        ease: EASE.out,
-        scrollTrigger: {
-          trigger: root,
-          start: 'top 75%',
-          once: true,
-        },
-      });
+      // Staggered opacity reveal — y is NOT animated here to avoid conflict
+      // with the continuous float animation below.
+      gsap.fromTo(
+        '[data-skill]',
+        { opacity: 0 },
+        {
+          opacity: 1,
+          duration: 0.6,
+          stagger: { each: 0.04, from: 'random' },
+          ease: EASE.out,
+          scrollTrigger: {
+            trigger: root,
+            start: 'top 75%',
+            once: true,
+          },
+        }
+      );
 
-      // Gentle continuous floating motion — each pill bobs at a slightly different phase
+      // Gentle continuous floating motion — each pill bobs at its own phase.
+      // Only animates y, never opacity, so the two never collide.
       const pills = root.querySelectorAll('[data-skill]');
       pills.forEach((pill, i) => {
         gsap.to(pill, {

@@ -28,9 +28,11 @@ export function Projects() {
 
 function Showcase() {
   const sectionRef = useRef<HTMLDivElement>(null);
-  const stickyRef = useRef<HTMLDivElement>(null);
   const [activeIndex, setActiveIndex] = useState(0);
+  const isFirstRender = useRef(true);
 
+  // ScrollTrigger setup — one per panel, fires onEnter and onEnterBack
+  // so reverse scroll stays perfectly symmetric with forward scroll.
   useEffect(() => {
     const section = sectionRef.current;
     if (!section) return;
@@ -41,62 +43,61 @@ function Showcase() {
     }
 
     const ctx = gsap.context(() => {
-      // One ScrollTrigger per project — fires when its panel enters the sticky zone.
       const panels = section.querySelectorAll('[data-project-panel]');
-      const triggers: ScrollTrigger[] = [];
-
       panels.forEach((panel, i) => {
-        const st = ScrollTrigger.create({
+        ScrollTrigger.create({
           trigger: panel,
           start: 'top center',
           end: 'bottom center',
           onEnter: () => setActiveIndex(i),
           onEnterBack: () => setActiveIndex(i),
         });
-        triggers.push(st);
       });
-
-      // Subtle perspective tilt on the sticky browser as you scroll.
-      const sticky = stickyRef.current;
-      if (sticky) {
-        gsap.to(sticky, {
-          rotateX: 4,
-          rotateY: -2,
-          transformPerspective: 1200,
-          ease: 'none',
-          scrollTrigger: {
-            trigger: section,
-            start: 'top top',
-            end: 'bottom bottom',
-            scrub: 1,
-          },
-        });
-      }
     }, section);
 
     return () => ctx.revert();
   }, []);
 
+  // GSAP-driven crossfade — ensures the browser preview and the panel
+  // content transition in perfect sync, unlike mismatched CSS durations.
+  useEffect(() => {
+    if (isFirstRender.current) {
+      isFirstRender.current = false;
+      return;
+    }
+    if (prefersReducedMotion()) return;
+
+    const previews = sectionRef.current?.querySelectorAll('[data-preview]');
+    if (!previews) return;
+
+    previews.forEach((preview, i) => {
+      gsap.killTweensOf(preview);
+      gsap.to(preview, {
+        opacity: i === activeIndex ? 1 : 0,
+        duration: 0.6,
+        ease: EASE.out,
+      });
+    });
+  }, [activeIndex]);
+
   const active = projects[activeIndex];
 
   return (
-    <div ref={sectionRef} className="mt-16 perspective-1000">
-      {/* Sticky browser preview — stays pinned while panels scroll past */}
-      <div
-        ref={stickyRef}
-        className="sticky top-24 z-10 mb-8"
-        style={{ transformStyle: 'preserve-3d' }}
-      >
+    <div ref={sectionRef} className="mt-16">
+      {/* Sticky browser preview — stays pinned while panels scroll past.
+          No 3D transforms here to avoid jitter on the pinned element. */}
+      <div className="sticky top-24 z-10 mb-8">
         <div className="relative">
-          {/* Crossfade stack — all previews layered, opacity driven by activeIndex */}
+          {/* Crossfade stack — all previews layered, opacity driven by GSAP */}
           <div className="relative">
             {projects.map((project, i) => (
               <div
                 key={project.id}
+                data-preview
                 className={cn(
-                  'transition-opacity duration-700 ease-out',
-                  i === activeIndex ? 'opacity-100' : 'pointer-events-none absolute inset-0 opacity-0'
+                  i === activeIndex ? 'relative' : 'pointer-events-none absolute inset-0'
                 )}
+                style={{ opacity: i === activeIndex ? 1 : 0 }}
               >
                 <ProjectBrowser url={project.url} accent={project.accent}>
                   <ProjectPreview project={project} />
@@ -107,14 +108,15 @@ function Showcase() {
 
           {/* Ambient glow behind the browser */}
           <div
-            className="absolute -inset-4 -z-10 rounded-3xl bg-gradient-to-br from-brand-primary/15 to-brand-secondary/15 blur-3xl transition-opacity duration-700"
+            className="absolute -inset-4 -z-10 rounded-3xl bg-gradient-to-br from-brand-primary/15 to-brand-secondary/15 blur-3xl transition-opacity duration-[600ms]"
             style={{ opacity: active.accent === 'primary' ? 0.7 : 0.5 }}
           />
         </div>
       </div>
 
-      {/* Scrolling detail panels — each one updates the sticky preview */}
-      <div className="flex flex-col gap-[60vh]">
+      {/* Scrolling detail panels — each one updates the sticky preview.
+          80vh gap gives each project enough dwell time. */}
+      <div className="flex flex-col gap-[80vh]">
         {projects.map((project, i) => (
           <ProjectPanel key={project.id} project={project} index={i} active={i === activeIndex} />
         ))}
@@ -139,7 +141,7 @@ function ProjectPanel({
     >
       <div
         className={cn(
-          'max-w-md rounded-2xl p-8 transition-all duration-500',
+          'max-w-md rounded-2xl p-8 transition-all duration-[600ms] ease-out',
           active ? 'glass-strong opacity-100 translate-y-0' : 'opacity-40 translate-y-4'
         )}
       >
