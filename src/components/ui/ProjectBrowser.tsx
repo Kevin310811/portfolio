@@ -53,7 +53,7 @@ export function ProjectBrowser({
       </div>
 
       {/* Content / preview area */}
-      <div className="relative aspect-[16/10] w-full bg-ink-900">{children}</div>
+      <div className="relative aspect-[16/10] w-full max-h-[440px] bg-ink-900">{children}</div>
     </div>
   );
 }
