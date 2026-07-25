@@ -21,7 +21,6 @@ export function SectionHeading({
   const titleRef = useReveal<HTMLDivElement>({
     y: 40,
     opacity: 0,
-    clip: true,
     duration: 1,
     start: 'top 85%',
   });

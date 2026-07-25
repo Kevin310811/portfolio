@@ -1,6 +1,7 @@
 import { SectionHeading } from '@/components/ui/SectionHeading';
 import { GlassCard } from '@/components/ui/GlassCard';
 import { experience } from '@/lib/data';
+import { useReveal } from '@/lib/anim';
 
 export function Experience() {
   return (
@@ -25,7 +26,7 @@ export function Experience() {
 
           <div className="flex flex-col gap-12">
             {experience.map((item, i) => (
-              <TimelineItem key={item.id} item={item} side={i % 2 === 0 ? 'left' : 'right'} />
+              <TimelineItem key={item.id} item={item} side={i % 2 === 0 ? 'left' : 'right'} index={i} />
             ))}
           </div>
         </div>
@@ -37,12 +38,22 @@ export function Experience() {
 function TimelineItem({
   item,
   side,
+  index,
 }: {
   item: (typeof experience)[number];
   side: 'left' | 'right';
+  index: number;
 }) {
+  const ref = useReveal<HTMLDivElement>({
+    x: side === 'left' ? -50 : 50,
+    opacity: 0,
+    duration: 0.9,
+    delay: index * 0.05,
+    start: 'top 85%',
+  });
+
   return (
-    <div className="relative md:grid md:grid-cols-2 md:gap-12">
+    <div ref={ref} className="relative md:grid md:grid-cols-2 md:gap-12">
       {/* Node */}
       <span
         aria-hidden
@@ -56,7 +67,7 @@ function TimelineItem({
             : 'md:col-start-2 md:pl-12'
         }
       >
-        <GlassCard hover className="p-6">
+        <GlassCard hover tilt className="p-6">
           <div className="flex flex-col gap-1 md:flex-row md:items-center md:justify-between">
             <h3 className="text-lg font-bold text-white">{item.role}</h3>
             <span className="text-xs uppercase tracking-wider text-brand-primary/80">

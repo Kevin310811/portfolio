@@ -7,7 +7,7 @@ import { useReveal } from '@/lib/anim';
  * Skills — floating technology capsules with staggered reveal.
  */
 export function Skills() {
-  const cardsRef = useReveal<HTMLDivElement>({ y: 60, opacity: 0, duration: 0.8, stagger: 0.15, start: 'top 80%' });
+  const cardsRef = useReveal<HTMLDivElement>({ y: 60, opacity: 0, duration: 0.8, start: 'top 80%' });
 
   return (
     <section id="skills" className="relative z-10 px-6 py-24 md:py-32">

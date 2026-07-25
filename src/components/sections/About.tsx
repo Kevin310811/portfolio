@@ -6,7 +6,7 @@ import { useReveal, useParallax } from '@/lib/anim';
 export function About() {
   const portraitRef = useReveal<HTMLDivElement>({ x: -60, opacity: 0, duration: 1.2, start: 'top 75%' });
   const bioRef = useReveal<HTMLDivElement>({ x: 60, opacity: 0, duration: 1.2, delay: 0.15, start: 'top 75%' });
-  const statsRef = useReveal<HTMLDivElement>({ y: 50, opacity: 0, duration: 0.8, stagger: 0.1, delay: 0.3, start: 'top 80%' });
+  const statsRef = useReveal<HTMLDivElement>({ y: 50, opacity: 0, duration: 0.8, delay: 0.3, start: 'top 80%' });
   const ringRef = useParallax<HTMLDivElement>({ speed: 0.15 });
 
   return (

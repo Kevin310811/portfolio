@@ -1,6 +1,7 @@
 import { useLenis } from '@/lib/useLenis';
 import { Background } from '@/components/ui/Background';
 import { Grain } from '@/components/ui/Grain';
+import { Cursor } from '@/components/layout/Cursor';
 import { Navbar } from '@/components/layout/Navbar';
 import { Footer } from '@/components/layout/Footer';
 import { Hero } from '@/components/sections/Hero';
@@ -17,6 +18,7 @@ function App() {
     <>
       <Background />
       <Grain />
+      <Cursor />
       <Navbar />
       <main className="relative z-10">
         <Hero />

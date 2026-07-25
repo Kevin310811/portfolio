@@ -3,9 +3,11 @@ import { Mail, MapPin, Send, CheckCircle2 } from 'lucide-react';
 import { SectionHeading } from '@/components/ui/SectionHeading';
 import { GlassCard } from '@/components/ui/GlassCard';
 import { Button } from '@/components/ui/Button';
+import { useReveal } from '@/lib/anim';
 
 export function Contact() {
   const [sent, setSent] = useState(false);
+  const formRef = useReveal<HTMLDivElement>({ y: 50, opacity: 0, duration: 1, start: 'top 80%' });
 
   function handleSubmit(e: FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -55,8 +57,8 @@ export function Contact() {
           </div>
 
           {/* Right — form */}
-          <div className="lg:col-span-7">
-            <GlassCard variant="strong" className="p-8 md:p-10">
+          <div ref={formRef} className="lg:col-span-7">
+            <GlassCard variant="strong" tilt className="p-8 md:p-10">
               {sent ? (
                 <div className="flex flex-col items-center justify-center gap-4 py-16 text-center">
                   <CheckCircle2 size={48} className="text-brand-primary" />
@@ -78,7 +80,7 @@ export function Contact() {
                         type="text"
                         required
                         placeholder="Your name"
-                        className="w-full rounded-xl border border-white/10 bg-white/[0.03] px-4 py-3 text-sm text-white placeholder:text-slate-500 transition-colors focus:border-brand-primary/50 focus:outline-none focus:ring-1 focus:ring-brand-primary/40"
+                        className="form-field w-full rounded-xl border border-white/10 bg-white/[0.03] px-4 py-3 text-sm text-white placeholder:text-slate-500 focus:outline-none"
                       />
                     </Field>
                     <Field label="Email" htmlFor="email">
@@ -88,7 +90,7 @@ export function Contact() {
                         type="email"
                         required
                         placeholder="you@company.com"
-                        className="w-full rounded-xl border border-white/10 bg-white/[0.03] px-4 py-3 text-sm text-white placeholder:text-slate-500 transition-colors focus:border-brand-primary/50 focus:outline-none focus:ring-1 focus:ring-brand-primary/40"
+                        className="form-field w-full rounded-xl border border-white/10 bg-white/[0.03] px-4 py-3 text-sm text-white placeholder:text-slate-500 focus:outline-none"
                       />
                     </Field>
                   </div>
@@ -97,7 +99,7 @@ export function Contact() {
                     <select
                       id="type"
                       name="type"
-                      className="w-full rounded-xl border border-white/10 bg-white/[0.03] px-4 py-3 text-sm text-white transition-colors focus:border-brand-primary/50 focus:outline-none focus:ring-1 focus:ring-brand-primary/40"
+                      className="form-field w-full rounded-xl border border-white/10 bg-white/[0.03] px-4 py-3 text-sm text-white focus:outline-none"
                     >
                       <option className="bg-ink-850">Marketing site</option>
                       <option className="bg-ink-850">Product UI</option>
@@ -114,7 +116,7 @@ export function Contact() {
                       rows={5}
                       required
                       placeholder="Tell me about your project, timeline, and goals…"
-                      className="w-full resize-none rounded-xl border border-white/10 bg-white/[0.03] px-4 py-3 text-sm text-white placeholder:text-slate-500 transition-colors focus:border-brand-primary/50 focus:outline-none focus:ring-1 focus:ring-brand-primary/40"
+                      className="form-field w-full resize-none rounded-xl border border-white/10 bg-white/[0.03] px-4 py-3 text-sm text-white placeholder:text-slate-500 focus:outline-none"
                     />
                   </Field>
 

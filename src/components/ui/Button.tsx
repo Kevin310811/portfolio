@@ -1,4 +1,5 @@
-import { ButtonHTMLAttributes, AnchorHTMLAttributes, forwardRef } from 'react';
+import { ButtonHTMLAttributes, AnchorHTMLAttributes, forwardRef, useRef, useEffect } from 'react';
+import { gsap, prefersReducedMotion, EASE } from '@/lib/gsap';
 import { cn } from '@/lib/utils';
 
 type Variant = 'primary' | 'secondary' | 'ghost';
@@ -36,19 +37,56 @@ function isAnchor(props: ButtonProps): props is ButtonAsAnchor {
 
 export const Button = forwardRef<HTMLButtonElement | HTMLAnchorElement, ButtonProps>(
   ({ className, variant = 'primary', size = 'md', children, ...props }, ref) => {
-    const classes = cn(base, variants[variant], sizes[size], className);
+    const innerRef = useRef<HTMLButtonElement | HTMLAnchorElement>(null);
 
-    const content = (
-      <span className="relative z-10 flex items-center gap-2">{children}</span>
-    );
+    // Magnetic hover + soft press — GPU-only transforms.
+    useEffect(() => {
+      const el = innerRef.current;
+      if (!el || prefersReducedMotion()) return;
+
+      const strength = 0.3;
+      const onMove = (e: Event) => {
+        const me = e as MouseEvent;
+        const rect = el.getBoundingClientRect();
+        const relX = me.clientX - (rect.left + rect.width / 2);
+        const relY = me.clientY - (rect.top + rect.height / 2);
+        gsap.to(el, { x: relX * strength, y: relY * strength, duration: 0.5, ease: EASE.out });
+      };
+      const onLeave = () => {
+        gsap.to(el, { x: 0, y: 0, duration: 0.6, ease: EASE.inOut });
+      };
+      const onDown = () => gsap.to(el, { scale: 0.96, duration: 0.18, ease: EASE.out });
+      const onUp = () => gsap.to(el, { scale: 1, duration: 0.3, ease: EASE.out });
+
+      el.addEventListener('mousemove', onMove);
+      el.addEventListener('mouseleave', onLeave);
+      el.addEventListener('mousedown', onDown);
+      el.addEventListener('mouseup', onUp);
+
+      return () => {
+        el.removeEventListener('mousemove', onMove);
+        el.removeEventListener('mouseleave', onLeave);
+        el.removeEventListener('mousedown', onDown);
+        el.removeEventListener('mouseup', onUp);
+        gsap.killTweensOf(el);
+      };
+    }, []);
+
+    const classes = cn(base, variants[variant], sizes[size], className);
+    const content = <span className="relative z-10 flex items-center gap-2">{children}</span>;
 
     if (isAnchor(props)) {
       const { as: _as, ...rest } = props;
       void _as;
       return (
         <a
-          ref={ref as React.Ref<HTMLAnchorElement>}
+          ref={(node) => {
+            (innerRef as React.MutableRefObject<HTMLAnchorElement | null>).current = node;
+            if (typeof ref === 'function') ref(node);
+            else if (ref) (ref as React.MutableRefObject<HTMLAnchorElement | null>).current = node;
+          }}
           className={classes}
+          data-cursor="hover"
           {...rest}
         >
           {content}
@@ -60,8 +98,13 @@ export const Button = forwardRef<HTMLButtonElement | HTMLAnchorElement, ButtonPr
     void _as;
     return (
       <button
-        ref={ref as React.Ref<HTMLButtonElement>}
+        ref={(node) => {
+          (innerRef as React.MutableRefObject<HTMLButtonElement | null>).current = node;
+          if (typeof ref === 'function') ref(node);
+          else if (ref) (ref as React.MutableRefObject<HTMLButtonElement | null>).current = node;
+        }}
         className={classes}
+        data-cursor="hover"
         {...rest}
       >
         {content}

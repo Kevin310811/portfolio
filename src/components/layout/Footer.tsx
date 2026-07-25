@@ -10,7 +10,7 @@ const socials = [
 ];
 
 export function Footer() {
-  const mainRef = useReveal<HTMLDivElement>({ y: 40, opacity: 0, duration: 0.8, stagger: 0.08, start: 'top 90%' });
+  const mainRef = useReveal<HTMLDivElement>({ y: 40, opacity: 0, duration: 0.8, start: 'top 90%' });
   const bottomRef = useReveal<HTMLDivElement>({ y: 20, opacity: 0, duration: 0.6, delay: 0.2, start: 'top 95%' });
 
   return (
@@ -40,11 +40,10 @@ export function Footer() {
                   <li key={link.href}>
                     <a
                       href={link.href}
-                      className="group relative text-sm text-slate-400 transition-colors hover:text-white"
+                      className="link-underline group relative text-sm text-slate-400 transition-colors hover:text-white"
                       data-cursor="hover"
                     >
                       {link.label}
-                      <span className="absolute -bottom-0.5 left-0 h-px w-0 bg-gradient-to-r from-brand-primary to-brand-secondary transition-all duration-300 group-hover:w-full" />
                     </a>
                   </li>
                 ))}
@@ -61,7 +60,7 @@ export function Footer() {
                       href={s.href}
                       target="_blank"
                       rel="noreferrer"
-                      className="group relative inline-flex items-center gap-1 text-sm text-slate-400 transition-colors hover:text-white"
+                      className="link-underline group relative inline-flex items-center gap-1 text-sm text-slate-400 transition-colors hover:text-white"
                       data-cursor="hover"
                     >
                       {s.label}
@@ -69,7 +68,6 @@ export function Footer() {
                         size={14}
                         className="opacity-0 transition-all duration-300 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 group-hover:opacity-100"
                       />
-                      <span className="absolute -bottom-0.5 left-0 h-px w-0 bg-gradient-to-r from-brand-primary to-brand-secondary transition-all duration-300 group-hover:w-full" />
                     </a>
                   </li>
                 ))}
@@ -83,11 +81,10 @@ export function Footer() {
                 <li>
                   <a
                     href="mailto:hello@ariavoss.dev"
-                    className="group relative text-sm text-slate-400 transition-colors hover:text-white"
+                    className="link-underline group relative text-sm text-slate-400 transition-colors hover:text-white"
                     data-cursor="hover"
                   >
                     hello@ariavoss.dev
-                    <span className="absolute -bottom-0.5 left-0 h-px w-0 bg-gradient-to-r from-brand-primary to-brand-secondary transition-all duration-300 group-hover:w-full" />
                   </a>
                 </li>
                 <li className="text-sm text-slate-400">Remote · Worldwide</li>

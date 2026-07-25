@@ -2,6 +2,7 @@ import { ArrowUpRight } from 'lucide-react';
 import { SectionHeading } from '@/components/ui/SectionHeading';
 import { ProjectBrowser } from '@/components/ui/ProjectBrowser';
 import { projects, type Project } from '@/lib/data';
+import { useReveal } from '@/lib/anim';
 import { cn } from '@/lib/utils';
 
 export function Projects() {
@@ -30,11 +31,24 @@ export function Projects() {
 
 function ProjectRow({ project, index }: { project: Project; index: number }) {
   const flipped = index % 2 === 1;
+  const previewRef = useReveal<HTMLDivElement>({
+    x: flipped ? 60 : -60,
+    opacity: 0,
+    duration: 1,
+    start: 'top 80%',
+  });
+  const detailsRef = useReveal<HTMLDivElement>({
+    x: flipped ? -60 : 60,
+    opacity: 0,
+    duration: 1,
+    delay: 0.15,
+    start: 'top 80%',
+  });
 
   return (
     <article className="group grid gap-8 lg:grid-cols-12 lg:items-center lg:gap-12">
       {/* Browser preview */}
-      <div className={cn('lg:col-span-7', flipped && 'lg:order-2 lg:col-start-6')}>
+      <div ref={previewRef} className={cn('lg:col-span-7', flipped && 'lg:order-2 lg:col-start-6')}>
         <div className="relative transition-transform duration-500 group-hover:-translate-y-1">
           <ProjectBrowser url={project.url} accent={project.accent}>
             <ProjectPreview project={project} />
@@ -44,7 +58,7 @@ function ProjectRow({ project, index }: { project: Project; index: number }) {
       </div>
 
       {/* Details */}
-      <div className={cn('flex flex-col gap-5 lg:col-span-5', flipped && 'lg:order-1 lg:col-start-1')}>
+      <div ref={detailsRef} className={cn('flex flex-col gap-5 lg:col-span-5', flipped && 'lg:order-1 lg:col-start-1')}>
         <div className="flex items-center gap-3 text-xs uppercase tracking-[0.2em] text-slate-500">
           <span className="text-brand-primary">0{index + 1}</span>
           <span className="h-px w-8 bg-white/15" />
@@ -73,6 +87,7 @@ function ProjectRow({ project, index }: { project: Project; index: number }) {
         <a
           href="#"
           className="group/link mt-2 inline-flex items-center gap-1.5 text-sm font-medium text-white"
+          data-cursor="hover"
         >
           View case study
           <ArrowUpRight
