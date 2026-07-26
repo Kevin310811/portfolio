@@ -82,87 +82,52 @@ function Showcase() {
   return (
     <div ref={sectionRef} className="mt-16">
       {/*
-        Two-column grid on md+ — browser left, panels right.
-        On mobile: single column, browser sits above panels, no sticky.
+        Single sticky browser column that works at ALL breakpoints.
 
-        KEY CENTERING APPROACH:
-        - Left column has no height constraint; it stretches to match the
-          right column (full scroll height) via default align-items:stretch.
-        - The inner wrapper is position:sticky with top set to 50vh minus
-          half the browser height (~240px), so it lands in the exact
-          vertical centre of the viewport regardless of scroll position.
-        - No self-start, no self-center — those collapse the column height
-          and break the sticky calculation.
+        Desktop (md+): 2-column grid — browser pinned left, panels scroll right.
+        Mobile/tablet (<md): single column — browser pinned on top, panels scroll
+        below it. The sticky container is 100vh tall with flexbox centering so
+        the browser stays at the exact vertical centre of the viewport at every
+        scroll position, on every screen size.
+
+        The browser markup is rendered once and shared across breakpoints —
+        only the grid layout changes, not the sticky behaviour.
       */}
       <div className="grid gap-8 md:grid-cols-2 md:gap-12">
-        {/* Left column — sticky browser, vertically centered via flexbox.
-            The sticky container is exactly 100vh tall and sticks at top:0,
-            so the browser inside is always at the viewport's vertical centre
-            regardless of its exact pixel height. No manual calc needed. */}
-        <div className="hidden md:block">
-          <div className="sticky top-0 flex h-screen items-center justify-center">
-            <div className="relative w-full max-w-[560px]">
-              {/* Crossfade stack */}
-              <div className="relative">
-                {projects.map((project, i) => (
-                  <div
-                    key={project.id}
-                    data-preview
-                    className={cn(
-                      i === activeIndex ? 'relative' : 'pointer-events-none absolute inset-0'
-                    )}
-                    style={{ opacity: i === activeIndex ? 1 : 0 }}
-                  >
-                    <ProjectBrowser url={project.url} accent={project.accent}>
-                      <ProjectPreview project={project} />
-                    </ProjectBrowser>
-                  </div>
-                ))}
-              </div>
-
-              {/* Ambient glow */}
-              <div
-                className="absolute -inset-4 -z-10 rounded-3xl bg-gradient-to-br from-brand-primary/15 to-brand-secondary/15 blur-3xl transition-opacity duration-[600ms]"
-                style={{ opacity: active.accent === 'primary' ? 0.7 : 0.5 }}
-              />
+        {/* Sticky browser column — visible and pinned at all breakpoints */}
+        <div className="sticky top-0 z-10 flex h-screen items-center justify-center">
+          <div className="relative w-full max-w-[560px]">
+            {/* Crossfade stack */}
+            <div className="relative">
+              {projects.map((project, i) => (
+                <div
+                  key={project.id}
+                  data-preview
+                  className={cn(
+                    i === activeIndex ? 'relative' : 'pointer-events-none absolute inset-0'
+                  )}
+                  style={{ opacity: i === activeIndex ? 1 : 0 }}
+                >
+                  <ProjectBrowser url={project.url} accent={project.accent}>
+                    <ProjectPreview project={project} />
+                  </ProjectBrowser>
+                </div>
+              ))}
             </div>
+
+            {/* Ambient glow */}
+            <div
+              className="absolute -inset-4 -z-10 rounded-3xl bg-gradient-to-br from-brand-primary/15 to-brand-secondary/15 blur-3xl transition-opacity duration-[600ms]"
+              style={{ opacity: active.accent === 'primary' ? 0.7 : 0.5 }}
+            />
           </div>
         </div>
 
-        {/* Right column — scrolling panels.
-            Top padding ensures the left-column sticky is fully pinned by
-            the time Panel 0 reaches the viewport centre.
-            Bottom padding keeps it pinned through the last panel. */}
+        {/* Scrolling panels column.
+            Top padding ensures the sticky is fully pinned before Panel 0
+            reaches centre. Bottom padding keeps it pinned through the last
+            panel. On mobile the panels appear below the pinned browser. */}
         <div className="flex flex-col gap-[60vh] pt-[40vh] pb-[60vh] md:gap-[80vh] md:pt-[40vh] md:pb-[60vh]">
-          {/*
-            Mobile only: show browser once at the top, non-sticky, then
-            panels scroll below it. This avoids any sticky/overlap issues
-            on small screens.
-          */}
-          <div className="mb-8 md:hidden">
-            <div className="relative mx-auto max-w-[560px]">
-              <div className="relative">
-                {projects.map((project, i) => (
-                  <div
-                    key={project.id}
-                    className={cn(
-                      i === activeIndex ? 'relative' : 'pointer-events-none absolute inset-0'
-                    )}
-                    style={{ opacity: i === activeIndex ? 1 : 0, transition: 'opacity 0.6s ease' }}
-                  >
-                    <ProjectBrowser url={project.url} accent={project.accent}>
-                      <ProjectPreview project={project} />
-                    </ProjectBrowser>
-                  </div>
-                ))}
-              </div>
-              <div
-                className="absolute -inset-4 -z-10 rounded-3xl bg-gradient-to-br from-brand-primary/15 to-brand-secondary/15 blur-3xl transition-opacity duration-[600ms]"
-                style={{ opacity: active.accent === 'primary' ? 0.7 : 0.5 }}
-              />
-            </div>
-          </div>
-
           {projects.map((project, i) => (
             <ProjectPanel
               key={project.id}
