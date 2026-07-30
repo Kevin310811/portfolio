@@ -85,17 +85,14 @@ function Showcase() {
         Single sticky browser column that works at ALL breakpoints.
 
         Desktop (md+): 2-column grid — browser pinned left, panels scroll right.
-        Mobile/tablet (<md): single column — browser pinned on top, panels scroll
-        below it. The sticky container is 100vh tall with flexbox centering so
-        the browser stays at the exact vertical centre of the viewport at every
-        scroll position, on every screen size.
-
-        The browser markup is rendered once and shared across breakpoints —
-        only the grid layout changes, not the sticky behaviour.
+        Mobile/tablet (<md): single column — browser pinned to the top with an
+        opaque background so panels scroll beneath it cleanly. Panels have
+        enough top padding and inter-panel gap that each panel's content sits
+        fully below the pinned browser when active.
       */}
       <div className="grid gap-8 md:grid-cols-2 md:gap-12">
         {/* Sticky browser column — visible and pinned at all breakpoints */}
-        <div className="sticky top-0 z-10 flex h-screen items-center justify-center">
+        <div className="sticky top-0 z-10 flex justify-center items-start bg-ink-900 pt-20 pb-6 md:h-screen md:items-center md:bg-transparent md:pt-0 md:pb-0">
           <div className="relative w-full max-w-[560px]">
             {/* Crossfade stack */}
             <div className="relative">
@@ -127,7 +124,7 @@ function Showcase() {
             Top padding ensures the sticky is fully pinned before Panel 0
             reaches centre. Bottom padding keeps it pinned through the last
             panel. On mobile the panels appear below the pinned browser. */}
-        <div className="flex flex-col gap-[60vh] pt-[40vh] pb-[60vh] md:gap-[80vh] md:pt-[40vh] md:pb-[60vh]">
+        <div className="flex flex-col gap-[35vh] pt-[25vh] pb-[35vh] md:gap-[80vh] md:pt-[40vh] md:pb-[60vh]">
           {projects.map((project, i) => (
             <ProjectPanel
               key={project.id}
@@ -154,7 +151,7 @@ function ProjectPanel({
   return (
     <div
       data-project-panel
-      className="flex min-h-[60vh] items-center md:min-h-[80vh]"
+      className="flex min-h-[50vh] items-center md:min-h-[80vh]"
     >
       <div
         className={cn(
