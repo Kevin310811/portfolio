@@ -48,7 +48,7 @@ export function lenisScrollTo(target: string): void {
 /** Smooth-scroll so the element's top sits at `offset` px from the viewport top. */
 export function lenisScrollToElement(el: HTMLElement, offset: number): void {
   if (lenisInstance) {
-    lenisInstance.scrollTo(el, { offset: -offset, duration: 1.2 });
+    lenisInstance.scrollTo(el, { offset: -offset, duration: 0.8 });
   } else {
     window.scrollTo({ top: el.getBoundingClientRect().top + window.scrollY - offset, behavior: 'smooth' });
   }

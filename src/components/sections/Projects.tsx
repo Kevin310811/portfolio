@@ -42,16 +42,52 @@ function Showcase() {
     }
 
     const ctx = gsap.context(() => {
-      const panels = section.querySelectorAll('[data-project-panel]');
+      const panels = Array.from(section.querySelectorAll('[data-project-panel]')) as HTMLElement[];
 
       // Scroll snapping — mobile/tablet only.
-      // Uses a debounce so snapping fires after the user stops scrolling,
-      // not mid-gesture, keeping the experience smooth with Lenis.
+      // A single scroll listener finds the nearest panel and snaps to it
+      // once scrolling settles. This engages earlier than per-panel triggers
+      // and prevents fast flicks from skipping projects, because every settle
+      // resolves to whichever panel is closest — not just ones that crossed.
       const isMobile = () => window.matchMedia('(max-width: 767px)').matches;
-      let snapTimer: number | undefined;
-
       const browserCol = section.querySelector('[data-browser-col]');
 
+      let snapTimer: number | undefined;
+      let isSnapping = false;
+
+      const snapToNearest = () => {
+        if (!isMobile()) return;
+        const browserBottom = browserCol
+          ? browserCol.getBoundingClientRect().bottom
+          : 80;
+        const target = browserBottom + 24;
+
+        let nearest = panels[0];
+        let minDist = Infinity;
+        for (const panel of panels) {
+          const dist = Math.abs(panel.getBoundingClientRect().top - target);
+          if (dist < minDist) {
+            minDist = dist;
+            nearest = panel;
+          }
+        }
+        if (nearest && minDist > 4) {
+          isSnapping = true;
+          lenisScrollToElement(nearest, target);
+          // Re-arm after the smooth scroll completes.
+          window.setTimeout(() => { isSnapping = false; }, 850);
+        }
+      };
+
+      const onScroll = () => {
+        if (isSnapping) return;
+        window.clearTimeout(snapTimer);
+        snapTimer = window.setTimeout(snapToNearest, 90);
+      };
+
+      window.addEventListener('scroll', onScroll, { passive: true });
+
+      // Keep the active index in sync (desktop + mobile).
       panels.forEach((panel, i) => {
         ScrollTrigger.create({
           trigger: panel,
@@ -59,23 +95,13 @@ function Showcase() {
           end: 'bottom center',
           onEnter: () => setActiveIndex(i),
           onEnterBack: () => setActiveIndex(i),
-          onToggle: (self) => {
-            if (!isMobile() || !self.isActive) return;
-            window.clearTimeout(snapTimer);
-            snapTimer = window.setTimeout(() => {
-              if (!self.isActive) return;
-              // Snap the panel's top edge to just below the sticky browser,
-              // not to the viewport centre which would hide it behind the browser.
-              const browserBottom = browserCol
-                ? browserCol.getBoundingClientRect().bottom
-                : 80;
-              lenisScrollToElement(panel as HTMLElement, browserBottom + 24);
-            }, 180);
-          },
         });
       });
 
-      return () => window.clearTimeout(snapTimer);
+      return () => {
+        window.clearTimeout(snapTimer);
+        window.removeEventListener('scroll', onScroll);
+      };
     }, section);
 
     return () => ctx.revert();
