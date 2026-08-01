@@ -42,6 +42,13 @@ function Showcase() {
 
     const ctx = gsap.context(() => {
       const panels = section.querySelectorAll('[data-project-panel]');
+
+      // Scroll snapping — mobile/tablet only.
+      // Uses a debounce so snapping fires after the user stops scrolling,
+      // not mid-gesture, keeping the experience smooth with Lenis.
+      const isMobile = () => window.matchMedia('(max-width: 767px)').matches;
+      let snapTimer: number | undefined;
+
       panels.forEach((panel, i) => {
         ScrollTrigger.create({
           trigger: panel,
@@ -49,8 +56,18 @@ function Showcase() {
           end: 'bottom center',
           onEnter: () => setActiveIndex(i),
           onEnterBack: () => setActiveIndex(i),
+          onToggle: (self) => {
+            if (!isMobile() || !self.isActive) return;
+            window.clearTimeout(snapTimer);
+            snapTimer = window.setTimeout(() => {
+              if (!self.isActive) return;
+              panel.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            }, 180);
+          },
         });
       });
+
+      return () => window.clearTimeout(snapTimer);
     }, section);
 
     return () => ctx.revert();
@@ -124,7 +141,7 @@ function Showcase() {
             the last panel.
             Mobile/tablet: top padding reserves space below the pinned browser
             so content never passes behind it. */}
-        <div className="flex flex-col gap-[35vh] pt-[55vh] pb-[20vh] md:gap-[80vh] md:pt-[40vh] md:pb-[60vh]">
+        <div className="flex flex-col gap-[45vh] pt-[50vh] pb-[30vh] md:gap-[80vh] md:pt-[40vh] md:pb-[60vh]">
           {projects.map((project, i) => (
             <ProjectPanel
               key={project.id}
@@ -151,33 +168,35 @@ function ProjectPanel({
   return (
     <div
       data-project-panel
-      className="flex min-h-[40vh] items-center md:min-h-[80vh]"
+      className="flex min-h-[35vh] items-center md:min-h-[80vh]"
     >
       <div
         className={cn(
-          'w-full max-w-md rounded-2xl p-8 transition-all duration-[600ms] ease-out',
+          'w-full max-w-md rounded-2xl p-6 transition-all duration-[600ms] ease-out md:p-8',
           active ? 'glass-strong opacity-100 translate-y-0' : 'opacity-40 translate-y-4'
         )}
       >
-        <div className="flex items-center gap-3 text-xs uppercase tracking-[0.2em] text-slate-500">
+        <div className="flex items-center gap-2 text-[0.65rem] uppercase tracking-[0.2em] text-slate-500 md:gap-3 md:text-xs">
           <span className="text-brand-primary">0{index + 1}</span>
-          <span className="h-px w-8 bg-white/15" />
+          <span className="h-px w-6 bg-white/15 md:w-8" />
           <span>{project.category}</span>
           <span className="text-slate-600">·</span>
           <span>{project.year}</span>
         </div>
 
-        <h3 className="mt-4 text-3xl font-bold tracking-tight text-white md:text-4xl">
+        <h3 className="mt-3 text-2xl font-bold tracking-tight text-white md:mt-4 md:text-4xl">
           {project.title}
         </h3>
 
-        <p className="mt-4 text-base leading-relaxed text-slate-400">{project.description}</p>
+        <p className="mt-3 text-sm leading-relaxed text-slate-400 md:mt-4 md:text-base">
+          {project.description}
+        </p>
 
-        <ul className="mt-6 flex flex-wrap gap-2">
+        <ul className="mt-4 flex flex-wrap gap-1.5 md:mt-6 md:gap-2">
           {project.tags.map((tag) => (
             <li
               key={tag}
-              className="rounded-full border border-white/10 bg-white/[0.03] px-3 py-1 text-xs text-slate-300"
+              className="rounded-full border border-white/10 bg-white/[0.03] px-2.5 py-1 text-[0.65rem] text-slate-300 md:px-3 md:text-xs"
             >
               {tag}
             </li>
@@ -186,7 +205,7 @@ function ProjectPanel({
 
         <a
           href="#"
-          className="group/link mt-6 inline-flex items-center gap-1.5 text-sm font-medium text-white"
+          className="group/link mt-4 inline-flex items-center gap-1.5 text-sm font-medium text-white md:mt-6"
           data-cursor="hover"
         >
           View case study
