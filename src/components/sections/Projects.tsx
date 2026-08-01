@@ -5,6 +5,7 @@ import { ProjectBrowser } from '@/components/ui/ProjectBrowser';
 import { projects, type Project } from '@/lib/data';
 import { gsap, ScrollTrigger, prefersReducedMotion, EASE } from '@/lib/gsap';
 import { cn } from '@/lib/utils';
+import { lenisScrollToElement } from '@/lib/useLenis';
 
 export function Projects() {
   return (
@@ -49,6 +50,8 @@ function Showcase() {
       const isMobile = () => window.matchMedia('(max-width: 767px)').matches;
       let snapTimer: number | undefined;
 
+      const browserCol = section.querySelector('[data-browser-col]');
+
       panels.forEach((panel, i) => {
         ScrollTrigger.create({
           trigger: panel,
@@ -61,7 +64,12 @@ function Showcase() {
             window.clearTimeout(snapTimer);
             snapTimer = window.setTimeout(() => {
               if (!self.isActive) return;
-              panel.scrollIntoView({ behavior: 'smooth', block: 'center' });
+              // Snap the panel's top edge to just below the sticky browser,
+              // not to the viewport centre which would hide it behind the browser.
+              const browserBottom = browserCol
+                ? browserCol.getBoundingClientRect().bottom
+                : 80;
+              lenisScrollToElement(panel as HTMLElement, browserBottom + 24);
             }, 180);
           },
         });
@@ -107,7 +115,7 @@ function Showcase() {
       */}
       <div className="grid gap-8 md:grid-cols-2 md:gap-12">
         {/* Sticky browser column — visible and pinned at all breakpoints */}
-        <div className="sticky top-20 z-10 flex justify-center md:top-0 md:h-screen md:items-center">
+        <div data-browser-col className="sticky top-20 z-10 flex justify-center md:top-0 md:h-screen md:items-center">
           <div className="relative w-full max-w-[560px]">
             {/* Crossfade stack */}
             <div className="relative">
