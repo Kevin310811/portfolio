@@ -82,17 +82,15 @@ function Showcase() {
   return (
     <div ref={sectionRef} className="mt-16">
       {/*
-        Single sticky browser column that works at ALL breakpoints.
-
         Desktop (md+): 2-column grid — browser pinned left, panels scroll right.
-        Mobile/tablet (<md): single column — browser pinned to the top with an
-        opaque background so panels scroll beneath it cleanly. Panels have
-        enough top padding and inter-panel gap that each panel's content sits
-        fully below the pinned browser when active.
+        Mobile/tablet (<md): single column — browser pinned at top, panels scroll
+        below it. The browser is sticky and reserves its own layout space; the
+        panels container has top padding equal to the browser's pinned height
+        so content never passes behind it.
       */}
       <div className="grid gap-8 md:grid-cols-2 md:gap-12">
         {/* Sticky browser column — visible and pinned at all breakpoints */}
-        <div className="sticky top-0 z-10 flex justify-center items-start bg-ink-900 pt-20 pb-6 md:h-screen md:items-center md:bg-transparent md:pt-0 md:pb-0">
+        <div className="sticky top-20 z-10 flex justify-center md:top-0 md:h-screen md:items-center">
           <div className="relative w-full max-w-[560px]">
             {/* Crossfade stack */}
             <div className="relative">
@@ -121,10 +119,12 @@ function Showcase() {
         </div>
 
         {/* Scrolling panels column.
-            Top padding ensures the sticky is fully pinned before Panel 0
-            reaches centre. Bottom padding keeps it pinned through the last
-            panel. On mobile the panels appear below the pinned browser. */}
-        <div className="flex flex-col gap-[35vh] pt-[25vh] pb-[35vh] md:gap-[80vh] md:pt-[40vh] md:pb-[60vh]">
+            Desktop: top padding ensures the sticky is fully pinned before
+            Panel 0 reaches centre; bottom padding keeps it pinned through
+            the last panel.
+            Mobile/tablet: top padding reserves space below the pinned browser
+            so content never passes behind it. */}
+        <div className="flex flex-col gap-[35vh] pt-[55vh] pb-[20vh] md:gap-[80vh] md:pt-[40vh] md:pb-[60vh]">
           {projects.map((project, i) => (
             <ProjectPanel
               key={project.id}
@@ -151,7 +151,7 @@ function ProjectPanel({
   return (
     <div
       data-project-panel
-      className="flex min-h-[50vh] items-center md:min-h-[80vh]"
+      className="flex min-h-[40vh] items-center md:min-h-[80vh]"
     >
       <div
         className={cn(
